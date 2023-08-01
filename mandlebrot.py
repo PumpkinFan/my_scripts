@@ -35,20 +35,19 @@ def main():
         xmin, xmax = min(x1, x2), max(x1, x2)
         ymin, ymax = min(y1, y2), max(y1, y2)
 
-        print(g)
         # determine new coordinates
         new_start = complex_grid[int(ymin), int(xmin)] 
         new_x_start, new_y_start = np.real(new_start), np.imag(new_start)
         new_stop = complex_grid[int(ymax), int(xmax)] 
         new_x_stop, new_y_stop = np.real(new_stop), np.imag(new_stop)
 
-        complex_grid = make_complex_grid(new_x_start, new_x_stop, X_RES+1, new_y_start, new_y_stop, Y_RES+1)
+        # complex_grid = make_complex_grid(new_x_start, new_x_stop, X_RES+1, new_y_start, new_y_stop, Y_RES+1)
         new_binary_img = determine_convergence(complex_grid)
-        im.set_array(new_binary_img)
-        plt.draw()
+        plt.clf()
+        plt.imshow(new_binary_img)
     
     complex_grid = make_complex_grid(-2.5, 0.5, X_RES+1, -1.5, 1.5, Y_RES+1)
-    binary_img = determine_convergence(g)
+    binary_img = determine_convergence(complex_grid.copy())
 
     fig, ax = plt.subplots()
     rs = RectangleSelector(ax, onselect, drawtype="box", useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels')
