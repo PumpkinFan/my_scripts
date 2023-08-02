@@ -52,8 +52,8 @@ def main():
         im.set_array(new_binary_img)
         plt.draw()
 
-        ax.set_xlim(i_start, i_stop)
-        ax.set_ylim(j_stop, j_start)
+        # ax.set_xlim(i_start, i_stop)
+        # ax.set_ylim(j_stop, j_start)
     
 
     fig, ax = plt.subplots()
