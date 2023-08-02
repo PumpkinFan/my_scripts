@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import RectangleSelector
-from functools import partial
+from matplotlib.widgets import RectangleSelector, Button
 
 N_ITER = 25
 X_RES = 1000
@@ -11,7 +10,7 @@ def mandle_func(z: complex, c: complex) -> complex:
     return z ** 2 + c
 
 def make_complex_grid(x_start, x_stop, x_num, y_start, y_stop, y_num) -> np.ndarray:
-    """x is the real component of the complex number and y is the imaginary component"""
+    """create a 2D grid of complex numbers with uniform spacing in both directions"""
     x_grid = np.linspace(x_start, x_stop, x_num)
     y_grid = np.linspace(y_start, y_stop, y_num)
     xx, yy = np.meshgrid(x_grid, y_grid)
@@ -29,23 +28,25 @@ def determine_convergence(c_grid):
 
 
 def main():
-    complex_grid = make_complex_grid(-2.5, 0.5, X_RES+1, -1.5, 1.5, Y_RES+1)
-    binary_img = determine_convergence(complex_grid)
+    initial_complex_grid = make_complex_grid(-2.5, 0.5, X_RES+1, -1.5, 1.5, Y_RES+1)
+    initial_binary_img = determine_convergence(initial_complex_grid)
+    complex_grid = initial_complex_grid.copy()
+    binary_img = initial_binary_img.copy()
 
-    # event handler function for zooming in on plot
+    # event handler function for "zooming" in on plot
+    # instead of just zooming this actually computes the mandlebrot set in the newly selected range
+    # the plot is then changed to show the set in this new range
     def onselect(eclick, erelease):
         # i, j are indices of x, y in complex_grid
         i_start, j_start = map(int, (eclick.xdata, eclick.ydata))
         i_stop, j_stop = map(int, (erelease.xdata, erelease.ydata))
 
-        print(i_start, i_stop)
+        print(eclick.xdata, eclick.ydata, erelease.xdata, erelease.ydata)
         
         new_start = complex_grid[j_start, i_start]
         new_x_start, new_y_start = np.real(new_start), np.imag(new_start)
         new_stop = complex_grid[j_stop, i_stop]
         new_x_stop, new_y_stop = np.real(new_stop), np.imag(new_stop)
-
-        print(new_start, new_stop)
 
         new_complex_grid = make_complex_grid(new_x_start, new_x_stop, X_RES+1, new_y_start, new_y_stop, Y_RES+1)
         new_binary_img = determine_convergence(new_complex_grid)
@@ -54,8 +55,16 @@ def main():
 
         complex_grid[:, :] = new_complex_grid.copy()
 
+    # event handler to reset plot
+    def reset_button_clicked(event):
+        im.set_array(initial_binary_img)
+        plt.draw()
+        complex_grid[:, :] = initial_complex_grid.copy()
+
     fig, ax = plt.subplots()
-    rs = RectangleSelector(ax, onselect, drawtype="box", useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels')
+    rs = RectangleSelector(ax, onselect, useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels')
+    reset_button = Button(plt.axes([0.7, 0.01, 0.2, 0.05]), "Reset")
+    reset_button.on_clicked(reset_button_clicked)
 
     im = ax.imshow(binary_img)
 
