@@ -4,13 +4,13 @@ from matplotlib.widgets import RectangleSelector
 from functools import partial
 
 N_ITER = 25
-X_RES = 100
-Y_RES = 100
+X_RES = 1000
+Y_RES = 1000
 
 def mandle_func(z: complex, c: complex) -> complex:
     return z ** 2 + c
 
-def make_complex_grid(x_start, x_stop, x_num, y_start, y_stop, y_num):
+def make_complex_grid(x_start, x_stop, x_num, y_start, y_stop, y_num) -> np.ndarray:
     """x is the real component of the complex number and y is the imaginary component"""
     x_grid = np.linspace(x_start, x_stop, x_num)
     y_grid = np.linspace(y_start, y_stop, y_num)
@@ -33,10 +33,10 @@ def main():
     binary_img = determine_convergence(complex_grid)
 
     # event handler function for zooming in on plot
-    def on_zoom(event):
+    def onselect(eclick, erelease):
         # i, j are indices of x, y in complex_grid
-        i_start, i_stop = map(int, ax.get_xlim())
-        j_stop, j_start = map(int, ax.get_ylim())
+        i_start, j_start = map(int, (eclick.xdata, eclick.ydata))
+        i_stop, j_stop = map(int, (erelease.xdata, erelease.ydata))
 
         print(i_start, i_stop)
         
@@ -52,22 +52,21 @@ def main():
         im.set_array(new_binary_img)
         plt.draw()
 
-        # ax.set_xlim(i_start, i_stop)
-        # ax.set_ylim(j_stop, j_start)
-    
+        complex_grid[:, :] = new_complex_grid.copy()
 
     fig, ax = plt.subplots()
-    # rs = RectangleSelector(ax, onselect, drawtype="box", useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels')
+    rs = RectangleSelector(ax, onselect, drawtype="box", useblit=True, button=[1], minspanx=5, minspany=5, spancoords='pixels')
 
     im = ax.imshow(binary_img)
-    cid = fig.canvas.mpl_connect("axes_enter_event", on_zoom)  # connect zoom event to our on_zoom function
 
-    # ax.set_xlabel("Real")
-    # ax.set_ylabel("Imaginary")
-    # x_step = X_RES // 10
-    # y_step = Y_RES // 10
-    # ax.set_xticks(range(len(x_grid))[::x_step], np.round(x_grid[::x_step], 1))
-    # ax.set_yticks(range(len(y_grid))[::y_step], np.round(y_grid[::y_step], 1))
+    ax.set_xlabel("Real")
+    ax.set_ylabel("Imaginary")
+    x_grid = np.real(complex_grid)[0, :]
+    y_grid = np.imag(complex_grid)[:, 0]
+    x_step = X_RES // 10
+    y_step = Y_RES // 10
+    ax.set_xticks(range(len(x_grid))[::x_step], np.round(x_grid[::x_step], 1))
+    ax.set_yticks(range(len(y_grid))[::y_step], np.round(y_grid[::y_step], 1))
     
     plt.show()
 
