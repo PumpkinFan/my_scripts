@@ -22,7 +22,7 @@ def life_iter(game_arr):
 
 
 def main(n_iters):
-    game_arr = life_init(50)
+    game_arr = life_init(100)
 
     # initialize a glider (https://conwaylife.com/wiki/Glider)
     # game_arr = np.zeros((10,10))
